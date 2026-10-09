@@ -1,0 +1,869 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ML Course Lab – Theory, Diagram, Code</title>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/atom-one-dark.min.css" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Literata:wght@500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--ink:#1c2733;--accent:#2457c5;--soft:#e8eef9;--bg:#f2f5f9}
+  body{background:var(--bg);color:var(--ink)}
+  h1,h2,h3,.brand{font-family:'Literata',Georgia,serif}
+  .topbar{background:var(--ink);color:#fff}
+  .topbar a{color:#cfe0ff;text-decoration:none;font-size:.9rem}
+  #sidebar{position:sticky;top:0;max-height:100vh;overflow-y:auto;padding:1rem .75rem}
+  .unit{font-weight:700;font-size:.85rem;margin:1rem 0 .35rem;color:#51606f}
+  .topic{display:block;width:100%;text-align:left;border:0;background:none;padding:.4rem .6rem;border-radius:.4rem;color:var(--ink);font-size:.93rem}
+  .topic:hover{background:var(--soft)}
+  .topic.active{background:var(--accent);color:#fff}
+  .panel{background:#fff;border-radius:.6rem;padding:1.25rem 1.5rem;box-shadow:0 1px 3px rgba(20,40,70,.08)}
+  .panel p,.panel li{max-width:75ch;line-height:1.65}
+  .params td:first-child{font-family:ui-monospace,Consolas,monospace;color:var(--accent);white-space:nowrap}
+  .panel li code{background:var(--soft);color:var(--accent);padding:.1rem .35rem;border-radius:.3rem;font-size:.85em}
+  pre{margin:0;border-radius:.5rem}
+  pre code{font-size:.85rem;padding:1rem!important}
+  .codebar{background:#21252b;color:#abb2bf;border-radius:.5rem .5rem 0 0;padding:.4rem .9rem;font-size:.8rem}
+  .libs span{background:var(--soft);color:var(--accent);border-radius:1rem;padding:.15rem .7rem;font-size:.82rem;margin:0 .35rem .35rem 0;display:inline-block;font-family:ui-monospace,Consolas,monospace}
+  .dflow,.dkids{display:flex;flex-wrap:wrap;gap:.4rem;align-items:center}
+  .dbranch{display:flex;flex-direction:column;align-items:center}
+  .dkids{justify-content:center}
+  .dbox{background:var(--soft);border:1px solid var(--accent);border-radius:.5rem;padding:.4rem .7rem;text-align:center;font-size:.85rem}
+  .dbox small{display:block;color:#51606f;font-size:.74rem}
+  .darr{color:var(--accent);font-size:1.1rem}.darr.down{font-size:.9rem;margin:.15rem 0 .35rem}
+  .dsvg{width:100%;max-width:520px;display:block;margin:0 auto}
+  .dcap{font-size:.82rem;color:#51606f;margin:.6rem 0 0;text-align:center}
+  .apps li{margin-bottom:.25rem}
+  .meta span{display:inline-block;background:var(--ink);color:#fff;border-radius:1rem;padding:.1rem .7rem;font-size:.75rem;margin:0 .4rem .4rem 0}
+  .lab{background:var(--soft);border-left:4px solid var(--accent);padding:.5rem .75rem;border-radius:.3rem;font-size:.92rem}
+  :focus-visible{outline:3px solid #ffb703;outline-offset:2px}
+  @media(min-width:768px){#sidebar{height:100vh}}
+</style>
+</head>
+<body>
+<header class="topbar py-2">
+  <div class="container-fluid d-flex align-items-center gap-3">
+    <button class="btn btn-sm btn-outline-light d-md-none" data-bs-toggle="collapse" data-bs-target="#sidebar" aria-label="Toggle topics">Topics</button>
+    <span class="brand fs-5">Applied ML &amp; Cloud Course (18 Weeks)</span>
+    <a class="ms-auto" href="https://codingacharya.blogspot.com/" target="_blank" rel="noopener">Coding Acharya</a>
+  </div>
+</header>
+
+<div class="container-fluid">
+  <div class="row">
+    <nav id="sidebar" class="col-md-3 col-xl-2 bg-white border-end collapse d-md-block" aria-label="Topics">
+      <input id="search" type="search" class="form-control form-control-sm" placeholder="Search topics" aria-label="Search topics">
+      <div id="menu"></div>
+    </nav>
+    <main class="col-md-9 col-xl-10 p-3 p-lg-4">
+      <div id="content"></div>
+      <div class="d-flex justify-content-between mt-3">
+        <button id="prev" class="btn btn-outline-primary btn-sm">Previous</button>
+        <button id="next" class="btn btn-primary btn-sm">Next</button>
+      </div>
+    </main>
+  </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/highlight.min.js"></script>
+<script>
+$(function () {
+
+  /* ---------- TOPIC DATA: add new topics by copying one object ---------- */
+  var T = [
+  { unit:"A · Foundations & Core ML", title:"Python ML Ecosystem", wk:"Week 1", sess:"Sessions 1–4",
+    lab:"Set up conda; full EDA on Iris and a housing dataset",
+    theory:["<b>NumPy</b>: fast n-dimensional arrays. <b>Pandas</b>: DataFrames for tabular data. <b>Matplotlib</b>: plotting.",
+            "<b>scikit-learn API</b>: every model has <code>fit()</code>, <code>predict()</code> / <code>transform()</code>; <b>Pipeline</b> chains preprocessing and model.",
+            "EDA checklist: shape, dtypes, missing values, summary statistics, distributions, correlations.",
+            "The Boston dataset was removed from scikit-learn (version 1.2); use California Housing instead."],
+    libs:["numpy","pandas","matplotlib","scikit-learn"],
+    params:[["as_frame=True","Returns a pandas DataFrame"],["df.describe()","Summary statistics"],["df.corr()","Correlation matrix"],["df.isna().sum()","Missing values per column"]],
+    code:`# Setup (terminal):
+# conda create -n ml python=3.11 -y && conda activate ml
+# conda install numpy pandas matplotlib scikit-learn jupyter -y
+import pandas as pd
+import matplotlib.pyplot as plt
+from sklearn.datasets import load_iris, fetch_california_housing
+
+iris = load_iris(as_frame=True)
+df = iris.frame
+print(df.shape, df.dtypes, sep="\\n")
+print(df.describe())
+print("Missing:\\n", df.isna().sum())
+print(df.groupby("target").mean())
+
+df.hist(figsize=(8, 6)); plt.tight_layout(); plt.show()
+print(df.corr()["target"].sort_values())
+
+housing = fetch_california_housing(as_frame=True).frame   # replaces Boston
+print(housing.head())`,
+    d:{t:"flow",s:["Raw data (CSV)","Pandas DataFrame","NumPy arrays","scikit-learn model","Matplotlib plots"]},
+    a:["Quick data analysis in every ML project","Data cleaning for dashboards","Prototyping models before production"],
+    alt:["<b>Polars</b>: faster DataFrames for large data","<b>Seaborn / Plotly</b>: richer plots","<b>ydata-profiling</b>: one-line automatic EDA report","<b>uv / venv</b>: lightweight alternatives to conda"] },
+
+  { unit:"A · Foundations & Core ML", title:"Linear & Logistic Regression", wk:"Week 2", sess:"Sessions 5–8",
+    lab:"House price regressor; spam classifier",
+    theory:["<b>Linear regression</b>: <code>ŷ = Xw + b</code>, cost = MSE <code>J = (1/2m) Σ(ŷ − y)²</code>.",
+            "<b>Gradient descent</b>: <code>w ← w − α ∂J/∂w</code>; too large α diverges, too small is slow.",
+            "<b>Logistic regression</b>: <code>p = σ(wᵀx + b)</code>, cost = log loss (cross-entropy); outputs probabilities.",
+            "Regularization: L1 (Lasso) shrinks weights to zero, L2 (Ridge) keeps them small."],
+    libs:["numpy","scikit-learn"],
+    params:[["alpha / lr","Gradient descent learning rate"],["C","Inverse regularization strength (Logistic)"],["penalty","'l2' or 'l1'"],["ngram_range","Word n-grams for spam text"]],
+    code:`import numpy as np
+from sklearn.pipeline import make_pipeline
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+
+# 1) Gradient descent for linear regression (from scratch)
+rng = np.random.default_rng(0)
+X = rng.random(100); y = 3 * X + 2 + rng.normal(0, .1, 100)
+w, b, lr = 0.0, 0.0, 0.1
+for _ in range(2000):
+    err = (w * X + b) - y
+    w -= lr * (err * X).mean()
+    b -= lr * err.mean()
+print("w, b:", round(w, 2), round(b, 2))        # about 3 and 2
+
+# 2) Spam classifier
+texts = ["win free prize now", "meeting at 10am", "free cash offer", "lunch tomorrow?"]
+labels = [1, 0, 1, 0]
+spam = make_pipeline(TfidfVectorizer(ngram_range=(1, 2)),
+                     LogisticRegression(C=1.0, penalty="l2", max_iter=200))
+spam.fit(texts, labels)
+print(spam.predict(["claim your free prize"]))`,
+    d:{t:"scatter",m:"reg",cap:"Gradient descent adjusts w and b until the line fits"},
+    a:["House and car price prediction","Spam and phishing detection","Credit default prediction","Click and conversion prediction"],
+    alt:["<b>Ridge / Lasso / ElasticNet</b>: regularized regression","<b>SGDClassifier</b>: gradient descent at scale","<b>Naive Bayes</b>: strong text baseline","<b>statsmodels</b>: p-values and confidence intervals"] },
+
+  { unit:"A · Foundations & Core ML", title:"Decision Trees, Random Forests & Bagging", wk:"Week 3", sess:"Sessions 9–12",
+    lab:"Titanic survival prediction with feature analysis",
+    theory:["<b>Decision tree</b>: splits on the feature with the best Gini/entropy gain; easy to read but overfits.",
+            "<b>Bagging</b>: train many trees on bootstrap samples and vote, reducing variance.",
+            "<b>Random Forest</b> = bagging + random feature subsets at each split.",
+            "<b>Feature importance</b>: impurity-based (fast, biased to high-cardinality) vs <b>permutation importance</b> (more reliable)."],
+    libs:["scikit-learn","pandas"],
+    params:[["n_estimators","Number of trees"],["max_depth","Limits tree depth"],["min_samples_leaf","Smooths the model"],["oob_score","Free out-of-bag validation"]],
+    code:`import pandas as pd
+from sklearn.datasets import fetch_openml
+from sklearn.model_selection import train_test_split
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import OneHotEncoder
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.inspection import permutation_importance
+
+df = fetch_openml("titanic", version=1, as_frame=True).frame
+X = df[["pclass", "sex", "age", "fare", "embarked"]]
+y = df["survived"].astype(int)
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, stratify=y, random_state=0)
+
+pre = ColumnTransformer([
+    ("num", SimpleImputer(strategy="median"), ["pclass", "age", "fare"]),
+    ("cat", Pipeline([("imp", SimpleImputer(strategy="most_frequent")),
+                      ("oh", OneHotEncoder(handle_unknown="ignore"))]), ["sex", "embarked"])])
+model = Pipeline([("pre", pre),
+                  ("rf", RandomForestClassifier(n_estimators=300, max_depth=6,
+                                                min_samples_leaf=3, oob_score=True, random_state=0))])
+model.fit(X_tr, y_tr)
+print("Test accuracy:", model.score(X_te, y_te))
+
+imp = permutation_importance(model, X_te, y_te, n_repeats=10, random_state=0)
+print(pd.Series(imp.importances_mean, index=X.columns).sort_values(ascending=False))`,
+    d:{t:"tree",s:["Sex = male?","Age &lt; 9.5?","Pclass &le; 2?","Died","Survived","Survived","Died"],cap:"Illustrative Titanic-style tree"},
+    a:["Customer churn and fraud detection","Medical risk scoring","Feature ranking for business insight"],
+    alt:["<b>ExtraTrees</b>: faster, more random forest","<b>HistGradientBoosting</b>: scikit-learn's built-in fast booster","<b>SHAP</b>: better explanations than impurity importance","<b>Dtreeviz</b>: nicer tree visualizations"] },
+
+  { unit:"A · Foundations & Core ML", title:"Boosting: AdaBoost, XGBoost, LightGBM, CatBoost", wk:"Week 4", sess:"Sessions 13–16",
+    lab:"Kaggle tabular competition starter notebook",
+    theory:["Boosting builds trees <b>sequentially</b>, each correcting the previous errors (reduces bias).",
+            "<b>AdaBoost</b> re-weights misclassified samples; <b>gradient boosting</b> fits the residual gradients.",
+            "<b>XGBoost</b>: regularized, fast, strong default. <b>LightGBM</b>: leaf-wise growth, very fast on big data. <b>CatBoost</b>: handles categorical features natively.",
+            "<b>Early stopping</b> halts training when the validation score stops improving, preventing overfitting."],
+    libs:["xgboost","lightgbm","catboost","scikit-learn"],
+    params:[["learning_rate","Shrinks each tree's contribution"],["n_estimators","Max boosting rounds (use early stopping)"],["max_depth / num_leaves","Tree complexity"],["subsample / colsample_bytree","Row/column sampling"],["early_stopping_rounds","Patience on the validation score"]],
+    code:`# pip install xgboost lightgbm catboost
+from sklearn.datasets import load_breast_cancer
+from sklearn.model_selection import train_test_split
+from xgboost import XGBClassifier
+import lightgbm as lgb
+from catboost import CatBoostClassifier
+
+X, y = load_breast_cancer(return_X_y=True)
+X_tr, X_va, y_tr, y_va = train_test_split(X, y, test_size=0.2, stratify=y, random_state=0)
+
+xgb = XGBClassifier(n_estimators=1000, learning_rate=0.05, max_depth=4,
+                    subsample=0.8, colsample_bytree=0.8,
+                    eval_metric="auc", early_stopping_rounds=50)
+xgb.fit(X_tr, y_tr, eval_set=[(X_va, y_va)], verbose=False)
+print("XGB best round:", xgb.best_iteration, "acc:", xgb.score(X_va, y_va))
+
+lgbm = lgb.LGBMClassifier(n_estimators=1000, learning_rate=0.05, num_leaves=31, verbose=-1)
+lgbm.fit(X_tr, y_tr, eval_set=[(X_va, y_va)], callbacks=[lgb.early_stopping(50)])
+print("LGBM acc:", lgbm.score(X_va, y_va))
+
+cat = CatBoostClassifier(iterations=1000, learning_rate=0.05, depth=6,
+                         early_stopping_rounds=50, verbose=0)
+cat.fit(X_tr, y_tr, eval_set=(X_va, y_va))
+print("CatBoost acc:", cat.score(X_va, y_va))`,
+    d:{t:"flow",s:["Fit tree 1","Compute errors","Fit tree 2 on residuals","Add with learning rate","Stop when validation stalls"]},
+    a:["Kaggle tabular competitions","Credit scoring and fraud detection","Search ranking and ad click prediction","Demand and price forecasting"],
+    alt:["<b>HistGradientBoosting</b>: no extra install","<b>Random Forest</b>: simpler, less tuning","<b>TabPFN / AutoGluon</b>: strong automated tabular models","<b>FLAML</b>: low-cost AutoML"] },
+
+  { unit:"A · Foundations & Core ML", title:"Model Evaluation", wk:"Week 5", sess:"Sessions 17–20",
+    lab:"Comprehensive evaluation report for a churn model",
+    theory:["<b>Cross-validation</b> (k-fold, stratified) gives a stable performance estimate.",
+            "<b>Bias–variance</b>: high bias = underfit, high variance = overfit; diagnose with learning curves.",
+            "<b>ROC-AUC</b>: ranking quality across thresholds. <b>PR curve / average precision</b>: better for imbalanced data like churn.",
+            "Pick the metric that matches business cost: recall for missing churners, precision for costly retention offers."],
+    libs:["scikit-learn","matplotlib"],
+    params:[["cv","Number of folds / splitter"],["scoring","'roc_auc', 'f1', 'average_precision'"],["class_weight","'balanced' for imbalanced data"],["train_sizes","Learning-curve sample sizes"]],
+    code:`import matplotlib.pyplot as plt
+from sklearn.datasets import make_classification
+from sklearn.model_selection import StratifiedKFold, cross_validate, train_test_split
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.metrics import (RocCurveDisplay, PrecisionRecallDisplay,
+                             classification_report, roc_auc_score)
+
+X, y = make_classification(n_samples=3000, weights=[0.85, 0.15], random_state=0)  # churn-like
+clf = RandomForestClassifier(n_estimators=200, class_weight="balanced", random_state=0)
+
+cv = StratifiedKFold(n_splits=5, shuffle=True, random_state=0)
+res = cross_validate(clf, X, y, cv=cv, scoring=["roc_auc", "average_precision", "f1"])
+for k in ["test_roc_auc", "test_average_precision", "test_f1"]:
+    print(k, res[k].mean().round(3), "+/-", res[k].std().round(3))
+
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, stratify=y, random_state=0)
+clf.fit(X_tr, y_tr)
+print(classification_report(y_te, clf.predict(X_te)))
+
+fig, ax = plt.subplots(1, 2, figsize=(10, 4))
+RocCurveDisplay.from_estimator(clf, X_te, y_te, ax=ax[0])
+PrecisionRecallDisplay.from_estimator(clf, X_te, y_te, ax=ax[1])
+plt.show()`,
+    d:{t:"flow",s:["Split into k folds","Train on k-1","Validate on 1","Average the score","ROC-AUC / PR curve"],cap:"Repeat for each of the k folds"},
+    a:["Churn and fraud model sign-off","Medical test screening (recall vs precision)","A/B model comparison before release"],
+    alt:["<b>MCC / balanced accuracy</b>: robust single metrics for imbalance","<b>Calibration curves</b>: check probability quality","<b>Repeated CV / nested CV</b>: more reliable tuning estimates","<b>Evidently</b>: ready-made evaluation reports"] },
+
+  { unit:"B · Unsupervised & Feature Work", title:"Unsupervised Learning: Clustering & Reduction", wk:"Week 6", sess:"Sessions 21–24",
+    lab:"Customer segmentation with a Plotly 3D visualization",
+    theory:["<b>K-Means</b>: centroid-based, needs K, assumes round clusters. <b>DBSCAN</b>: density-based, finds arbitrary shapes and noise.",
+            "<b>Hierarchical</b>: builds a dendrogram (linkage: ward, average, complete).",
+            "<b>PCA</b>: linear variance-preserving reduction. <b>t-SNE</b>: non-linear, for 2D/3D visualization only (not for new data).",
+            "Scale features first; evaluate with silhouette score."],
+    libs:["scikit-learn","plotly","pandas"],
+    params:[["n_clusters","K for K-Means / Agglomerative"],["eps, min_samples","DBSCAN radius and density"],["linkage","'ward', 'average', 'complete'"],["perplexity","t-SNE neighbourhood size (5-50)"]],
+    code:`import pandas as pd, plotly.express as px
+from sklearn.datasets import make_blobs
+from sklearn.preprocessing import StandardScaler
+from sklearn.cluster import KMeans, DBSCAN, AgglomerativeClustering
+from sklearn.decomposition import PCA
+from sklearn.metrics import silhouette_score
+
+X, _ = make_blobs(n_samples=400, centers=4, n_features=6, random_state=1)  # customer features
+Xs = StandardScaler().fit_transform(X)
+
+km = KMeans(n_clusters=4, n_init=10, random_state=0).fit(Xs)
+db = DBSCAN(eps=1.2, min_samples=8).fit(Xs)
+hc = AgglomerativeClustering(n_clusters=4, linkage="ward").fit(Xs)
+print("KMeans silhouette:", silhouette_score(Xs, km.labels_))
+
+pcs = PCA(n_components=3).fit_transform(Xs)
+df = pd.DataFrame(pcs, columns=["PC1", "PC2", "PC3"])
+df["segment"] = km.labels_.astype(str)
+px.scatter_3d(df, x="PC1", y="PC2", z="PC3", color="segment").show()
+
+# t-SNE for 2D visualization: from sklearn.manifold import TSNE
+# TSNE(n_components=2, perplexity=30, random_state=0).fit_transform(Xs)`,
+    d:{t:"scatter",m:"clusters",cap:"Customers grouped into segments"},
+    a:["Customer segmentation for marketing","Anomaly and fraud grouping","Document and image clustering","Visualizing high-dimensional data"],
+    alt:["<b>HDBSCAN</b>: DBSCAN without a fixed eps","<b>UMAP</b>: faster, better global structure than t-SNE","<b>Gaussian Mixture</b>: soft clusters","<b>MiniBatchKMeans</b>: very large data"] },
+
+  { unit:"B · Unsupervised & Feature Work", title:"Feature Engineering", wk:"Week 7", sess:"Sessions 25–28",
+    lab:"Full pipeline for a credit-risk dataset",
+    theory:["<b>Encoding</b>: one-hot (low cardinality), ordinal, target encoding (high cardinality, careful of leakage).",
+            "<b>Scaling</b>: StandardScaler / MinMax for distance- and gradient-based models; trees do not need it.",
+            "<b>Imputation</b>: median/mode, KNN, or add a missing-indicator flag.",
+            "<b>Selection</b>: filter (correlation), wrapper (<b>RFE</b>), embedded (L1, tree importance, <b>SHAP</b>).",
+            "Always fit transformers on training data only (avoid leakage) by putting them inside a Pipeline."],
+    libs:["scikit-learn","pandas"],
+    params:[["SimpleImputer(strategy)","'median', 'most_frequent'"],["OneHotEncoder(handle_unknown)","'ignore' for unseen categories"],["RFE(n_features_to_select)","Number of features to keep"],["add_indicator","Flag where values were missing"]],
+    code:`import numpy as np, pandas as pd
+from sklearn.compose import ColumnTransformer
+from sklearn.pipeline import Pipeline
+from sklearn.impute import SimpleImputer
+from sklearn.preprocessing import StandardScaler, OneHotEncoder
+from sklearn.feature_selection import RFE
+from sklearn.linear_model import LogisticRegression
+from sklearn.model_selection import cross_val_score
+
+rng = np.random.default_rng(0); n = 1000
+df = pd.DataFrame({"income": rng.normal(50000, 15000, n),
+                   "age": rng.integers(21, 65, n).astype(float),
+                   "loan": rng.normal(10000, 4000, n),
+                   "purpose": rng.choice(["car", "home", "edu"], n)})
+df.loc[rng.choice(n, 80), "income"] = np.nan                      # missing values
+y = (df["loan"] / df["income"].fillna(50000) + rng.normal(0, .05, n) > 0.25).astype(int)
+
+num, cat = ["income", "age", "loan"], ["purpose"]
+pre = ColumnTransformer([
+    ("num", Pipeline([("imp", SimpleImputer(strategy="median", add_indicator=True)),
+                      ("sc", StandardScaler())]), num),
+    ("cat", OneHotEncoder(handle_unknown="ignore"), cat)])
+
+pipe = Pipeline([("pre", pre),
+                 ("rfe", RFE(LogisticRegression(max_iter=500), n_features_to_select=4)),
+                 ("clf", LogisticRegression(max_iter=500))])
+print("CV AUC:", cross_val_score(pipe, df, y, cv=5, scoring="roc_auc").mean())`,
+    d:{t:"flow",s:["Impute missing","Encode categoricals","Scale numerics","Select features (RFE)","Model"]},
+    a:["Credit-risk and loan approval models","Insurance pricing","Churn prediction","Any tabular ML project"],
+    alt:["<b>feature-engine / category_encoders</b>: richer encoders","<b>Featuretools</b>: automated feature generation","<b>Boruta / SelectFromModel</b>: alternative selection","<b>SHAP-based selection</b>: keep high-impact features"] },
+
+  { unit:"B · Unsupervised & Feature Work", title:"Hyperparameter Tuning", wk:"Week 8", sess:"Sessions 29–32",
+    lab:"Tune XGBoost to maximize F1-score",
+    theory:["<b>Grid search</b>: tries every combination (expensive). <b>Random search</b>: samples combinations; usually better for the same budget.",
+            "<b>Optuna</b>: Bayesian-style (TPE) search with <b>pruning</b> of weak trials.",
+            "Tune with cross-validation on the training set only; keep a final untouched test set.",
+            "Tune the important parameters first: learning rate, depth, n_estimators, subsample."],
+    libs:["optuna","xgboost","scikit-learn"],
+    params:[["n_trials","Number of Optuna trials"],["scoring='f1'","Metric to maximize"],["suggest_float(log=True)","Log-scale search for learning rate"],["direction","'maximize' for F1"]],
+    code:`# pip install optuna xgboost
+import optuna
+from sklearn.datasets import make_classification
+from sklearn.model_selection import cross_val_score, train_test_split
+from xgboost import XGBClassifier
+
+X, y = make_classification(n_samples=2000, weights=[0.8, 0.2], random_state=0)
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, stratify=y, random_state=0)
+
+def objective(trial):
+    params = dict(
+        n_estimators=trial.suggest_int("n_estimators", 100, 600),
+        max_depth=trial.suggest_int("max_depth", 2, 8),
+        learning_rate=trial.suggest_float("learning_rate", 0.01, 0.3, log=True),
+        subsample=trial.suggest_float("subsample", 0.6, 1.0),
+        colsample_bytree=trial.suggest_float("colsample_bytree", 0.6, 1.0))
+    model = XGBClassifier(**params, eval_metric="logloss")
+    return cross_val_score(model, X_tr, y_tr, cv=3, scoring="f1").mean()
+
+study = optuna.create_study(direction="maximize")
+study.optimize(objective, n_trials=30)
+print("Best F1 (CV):", study.best_value, study.best_params)
+
+best = XGBClassifier(**study.best_params).fit(X_tr, y_tr)
+from sklearn.metrics import f1_score
+print("Test F1:", f1_score(y_te, best.predict(X_te)))`,
+    d:{t:"flow",s:["Define search space","Sample parameters","Cross-validate","Score (F1)","Keep best params"],cap:"Optuna prunes poor trials early"},
+    a:["Squeezing accuracy out of production models","Kaggle competitions","Automated retraining pipelines"],
+    alt:["<b>RandomizedSearchCV</b>: simple and built in","<b>HalvingRandomSearchCV</b>: successive halving, faster","<b>Ray Tune / Hyperopt</b>: distributed tuning","<b>SageMaker Automatic Model Tuning</b>: managed tuning in the cloud"] },
+
+  { unit:"C · Cloud ML (AWS & Google)", title:"AWS SageMaker I: Training Jobs", wk:"Week 9", sess:"Sessions 33–36",
+    lab:"Train XGBoost in SageMaker Studio",
+    theory:["<b>SageMaker Studio</b>: web IDE; run notebooks, jobs, pipelines.",
+            "<b>Built-in algorithms</b> (XGBoost, Linear Learner, K-Means…) run as containers; you provide data in <b>S3</b> and an IAM <b>role</b>.",
+            "A <b>training job</b> launches temporary instances, reads S3 channels (train/validation), writes the model artifact back to S3.",
+            "Cost tips: use small instances, Spot training, and delete endpoints/notebooks when idle."],
+    libs:["sagemaker","boto3"],
+    params:[["instance_type","e.g. ml.m5.xlarge"],["instance_count","Training nodes"],["hyperparameters","num_round, max_depth, eta, objective"],["output_path","S3 location for model.tar.gz"]],
+    code:`# SageMaker Python SDK v2 style, run inside SageMaker Studio
+import sagemaker
+from sagemaker import image_uris
+from sagemaker.estimator import Estimator
+from sagemaker.inputs import TrainingInput
+
+session = sagemaker.Session()
+role = sagemaker.get_execution_role()
+bucket = session.default_bucket()
+region = session.boto_region_name
+
+image = image_uris.retrieve("xgboost", region, version="1.7-1")
+xgb = Estimator(image_uri=image, role=role,
+                instance_count=1, instance_type="ml.m5.xlarge",
+                output_path=f"s3://{bucket}/churn/output", sagemaker_session=session)
+xgb.set_hyperparameters(objective="binary:logistic", num_round=100,
+                        max_depth=5, eta=0.2, subsample=0.8)
+
+train = TrainingInput(f"s3://{bucket}/churn/train", content_type="csv")
+val = TrainingInput(f"s3://{bucket}/churn/validation", content_type="csv")
+xgb.fit({"train": train, "validation": val})
+print("Model artifact:", xgb.model_data)`,
+    d:{t:"flow",s:["Data in S3","Training job (Estimator)","Model artifact in S3","Deploy / register","CloudWatch logs"]},
+    a:["Managed training without handling servers","Scaling training to large datasets","Repeatable team ML workflows"],
+    alt:["<b>Script mode</b>: bring your own scikit-learn/PyTorch script","<b>Spot training</b>: up to ~70-90% cheaper (can be interrupted)","<b>SageMaker Pipelines</b>: automate the whole workflow","<b>Note</b>: newer SDK versions change some class names, so check the current docs"] },
+
+  { unit:"C · Cloud ML (AWS & Google)", title:"AWS SageMaker II: Deployment & Monitoring", wk:"Week 10", sess:"Sessions 37–40",
+    lab:"Deploy and monitor a SageMaker churn endpoint",
+    theory:["<b>Real-time endpoint</b>: always-on, low latency. <b>Batch transform</b>: score a whole S3 dataset offline.",
+            "<b>A/B testing</b>: several <b>production variants</b> behind one endpoint with traffic weights.",
+            "<b>Model Monitor</b>: captures requests, compares them to a baseline, flags data/quality drift.",
+            "Delete endpoints after practice: they bill per hour while running."],
+    libs:["sagemaker","boto3"],
+    params:[["initial_instance_count","Instances behind the endpoint"],["InitialVariantWeight","Traffic share per variant"],["DataCaptureConfig","Sampling percentage of requests saved"],["schedule_cron_expression","Monitoring frequency"]],
+    code:`# Continue from the trained estimator 'xgb' (Week 9)
+from sagemaker.serializers import CSVSerializer
+from sagemaker.model_monitor import DataCaptureConfig, DefaultModelMonitor
+from sagemaker.model_monitor.dataset_format import DatasetFormat
+from sagemaker.model_monitor import CronExpressionGenerator
+
+capture = DataCaptureConfig(enable_capture=True, sampling_percentage=100,
+                            destination_s3_uri=f"s3://{bucket}/churn/capture")
+predictor = xgb.deploy(initial_instance_count=1, instance_type="ml.m5.large",
+                       serializer=CSVSerializer(), data_capture_config=capture)
+print(predictor.predict("34,1,0,56.2,3"))
+
+# Batch transform (offline scoring)
+tf = xgb.transformer(instance_count=1, instance_type="ml.m5.large",
+                     output_path=f"s3://{bucket}/churn/batch-out")
+tf.transform(f"s3://{bucket}/churn/batch-in", content_type="text/csv", split_type="Line")
+
+# Model Monitor: baseline + hourly schedule
+monitor = DefaultModelMonitor(role=role, instance_count=1, instance_type="ml.m5.xlarge")
+monitor.suggest_baseline(baseline_dataset=f"s3://{bucket}/churn/train/train.csv",
+                         dataset_format=DatasetFormat.csv(header=False),
+                         output_s3_uri=f"s3://{bucket}/churn/baseline")
+monitor.create_monitoring_schedule(endpoint_input=predictor.endpoint_name,
+    output_s3_uri=f"s3://{bucket}/churn/reports",
+    statistics=monitor.baseline_statistics(), constraints=monitor.suggested_constraints(),
+    schedule_cron_expression=CronExpressionGenerator.hourly())
+
+# predictor.delete_endpoint()   # stop billing when done
+# A/B test: boto3 create_endpoint_config(ProductionVariants=[{...InitialVariantWeight: 0.9}, {...: 0.1}])`,
+    d:{t:"branch",r:"Trained model",s:["Real-time endpoint|low latency","Batch transform|offline scoring","A/B variants|traffic split","Model Monitor|drift alerts"]},
+    a:["Live churn or fraud scoring APIs","Nightly scoring of customer databases","Safe rollout of a new model version","Drift alerts in production"],
+    alt:["<b>Serverless inference</b>: pay per request for spiky traffic","<b>Async inference</b>: large payloads and long jobs","<b>Multi-model endpoints</b>: many models on one instance","<b>Shadow testing</b>: compare a new model without affecting users"] },
+
+  { unit:"C · Cloud ML (AWS & Google)", title:"AWS ML Certification Prep (MLS-C01)", wk:"Week 11", sess:"Sessions 41–44",
+    lab:"Two full timed mock exams",
+    theory:["<b>MLS-C01 domains</b>: Data Engineering 20%, Exploratory Data Analysis 24%, Modeling 36%, ML Implementation & Operations 20%.",
+            "<b>Important:</b> AWS retired MLS-C01 (last exam date 31 March 2026). The current path is <b>AWS Certified Machine Learning Engineer – Associate (MLA-C01)</b>; check AWS for the latest exam version before booking.",
+            "Strategy: read the scenario, find the constraint (cost, latency, data size), eliminate wrong options, flag and revisit.",
+            "Know: SageMaker algorithms and their input formats, S3/Glue/Kinesis for data, metrics choice, imbalanced data, deployment options."],
+    libs:["random","time"],
+    params:[["N_QUESTIONS","Questions per mock"],["MINUTES","Time limit"],["PASS","Passing percentage you target"]],
+    code:`import random, time
+
+# Tiny timed mock-exam runner: replace the bank with your own questions
+BANK = [
+  {"q": "Which SageMaker feature detects data drift on a live endpoint?",
+   "opts": ["Model Monitor", "Debugger", "Ground Truth", "Neo"], "ans": 0},
+  {"q": "Best metric for a highly imbalanced fraud dataset?",
+   "opts": ["Accuracy", "PR-AUC", "R-squared", "RMSE"], "ans": 1},
+  {"q": "Where do SageMaker training jobs read data from by default?",
+   "opts": ["S3", "EBS only", "DynamoDB", "RDS"], "ans": 0},
+]
+N_QUESTIONS, MINUTES, PASS = 3, 5, 72
+
+random.shuffle(BANK)
+start, score = time.time(), 0
+for i, item in enumerate(BANK[:N_QUESTIONS], 1):
+    if time.time() - start > MINUTES * 60:
+        print("Time up!"); break
+    print(f"\\nQ{i}. {item['q']}")
+    for j, o in enumerate(item["opts"]): print(f"  {j}) {o}")
+    score += int(input("Answer: ")) == item["ans"]
+
+pct = 100 * score / N_QUESTIONS
+print(f"\\nScore {pct:.0f}% -> {'PASS' if pct >= PASS else 'REVIEW weak domains'}")`,
+    d:{t:"branch",r:"MLS-C01 domains",s:["Data Engineering|20%","Exploratory Analysis|24%","Modeling|36%","Implementation & Ops|20%"]},
+    a:["Career credentials for ML roles on AWS","Structured revision of the full ML lifecycle on AWS","Interview preparation for cloud ML jobs"],
+    alt:["<b>AWS ML Engineer – Associate (MLA-C01)</b>: current AWS ML certification","<b>AWS AI Practitioner (AIF-C01)</b>: entry-level","<b>Google Professional ML Engineer</b>","<b>Azure DP-100</b> or <b>Databricks ML Associate</b>"] },
+
+  { unit:"C · Cloud ML (AWS & Google)", title:"Google Vertex AI", wk:"Week 12", sess:"Sessions 45–48",
+    lab:"Train an AutoML image model; deploy an endpoint",
+    theory:["<b>Vertex AI Workbench</b>: managed Jupyter notebooks. <b>AutoML</b>: train models without writing model code.",
+            "<b>Custom training</b>: run your own container or Python package on managed machines.",
+            "<b>Model Registry</b>: versioned models; deploy to an <b>endpoint</b> for online prediction.",
+            "Data lives in Cloud Storage/BigQuery; control access with IAM. Undeploy endpoints to avoid charges."],
+    libs:["google-cloud-aiplatform"],
+    params:[["project / location","Your GCP project and region"],["prediction_type","'classification' for AutoML images"],["budget_milli_node_hours","Training budget (8000 = 8 node hours)"],["model_type","'CLOUD' (high accuracy) or edge types"]],
+    code:`# pip install google-cloud-aiplatform   (check current Vertex AI docs for newer APIs)
+from google.cloud import aiplatform
+
+aiplatform.init(project="my-project", location="us-central1",
+                staging_bucket="gs://my-bucket")
+
+dataset = aiplatform.ImageDataset.create(
+    display_name="flowers",
+    gcs_source="gs://my-bucket/flowers/import.csv",
+    import_schema_uri=aiplatform.schema.dataset.ioformat.image.single_label_classification)
+
+job = aiplatform.AutoMLImageTrainingJob(
+    display_name="flowers-automl",
+    prediction_type="classification",
+    model_type="CLOUD")
+
+model = job.run(dataset=dataset,
+                model_display_name="flowers-model",
+                training_fraction_split=0.8,
+                validation_fraction_split=0.1,
+                test_fraction_split=0.1,
+                budget_milli_node_hours=8000)
+
+endpoint = model.deploy()          # online prediction endpoint
+# endpoint.undeploy_all(); endpoint.delete()   # stop charges when done`,
+    d:{t:"flow",s:["Images in Cloud Storage","Vertex dataset","AutoML training job","Model Registry","Endpoint"]},
+    a:["Image classification without ML code","Managed training for custom models","Centralized model versioning and deployment","Multi-cloud skills alongside AWS"],
+    alt:["<b>BigQuery ML</b>: train models with SQL","<b>Vertex Pipelines</b>: Kubeflow-based workflows","<b>Azure ML / SageMaker Canvas</b>: comparable platforms","<b>Hugging Face + custom training</b>: more control than AutoML"] },
+
+  { unit:"D · MLOps, NLP & Time Series", title:"MLOps Fundamentals", wk:"Week 13", sess:"Sessions 49–52",
+    lab:"Set up MLflow; version a dataset with DVC",
+    theory:["<b>MLflow</b>: tracks parameters, metrics, artifacts; stores models in a registry.",
+            "<b>DVC</b>: Git for data; stores a small <code>.dvc</code> pointer in Git and the data in remote storage (S3/GCS).",
+            "<b>CI/CD</b>: automatic tests, training and deployment when code or data changes (GitHub Actions).",
+            "Reproducibility = code version + data version + environment + random seed."],
+    libs:["mlflow","dvc","scikit-learn"],
+    params:[["set_experiment","Groups related runs"],["log_params / log_metric","Record settings and results"],["dvc add / push","Version and upload data"],["registered_model_name","Adds the model to the registry"]],
+    code:`# DVC (terminal):
+# git init && dvc init
+# dvc add data/train.csv               -> creates data/train.csv.dvc
+# git add data/train.csv.dvc .gitignore && git commit -m "track data"
+# dvc remote add -d storage s3://my-bucket/dvc && dvc push
+
+import mlflow, mlflow.sklearn
+from sklearn.datasets import load_wine
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import accuracy_score
+
+X, y = load_wine(return_X_y=True)
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, random_state=0)
+
+mlflow.set_experiment("wine-demo")
+for n in [50, 200]:
+    with mlflow.start_run(run_name=f"rf-{n}"):
+        model = RandomForestClassifier(n_estimators=n, random_state=0).fit(X_tr, y_tr)
+        acc = accuracy_score(y_te, model.predict(X_te))
+        mlflow.log_param("n_estimators", n)
+        mlflow.log_metric("accuracy", acc)
+        mlflow.sklearn.log_model(model, "model")
+# Run 'mlflow ui' in the terminal and open http://127.0.0.1:5000`,
+    d:{t:"flow",s:["Code (Git)","Data (DVC)","Experiments (MLflow)","Model registry","CI/CD deploy"]},
+    a:["Reproducible experiments in teams","Auditable model and data lineage","Automated retraining and release","Regulated industries needing traceability"],
+    alt:["<b>Weights & Biases</b>: popular experiment tracking","<b>lakeFS / Git LFS</b>: data versioning alternatives","<b>Kubeflow / Airflow / Prefect</b>: pipeline orchestration","<b>SageMaker Experiments / Vertex Experiments</b>: cloud-native tracking"] },
+
+  { unit:"D · MLOps, NLP & Time Series", title:"NLP Fundamentals", wk:"Week 14", sess:"Sessions 53–56",
+    lab:"Sentiment analysis pipeline on Amazon reviews",
+    theory:["<b>Preprocessing</b>: lowercase, tokenize, remove stop words, stem/lemmatize.",
+            "<b>TF-IDF</b>: sparse word weights (frequent in a document, rare overall).",
+            "<b>Word2Vec / GloVe</b>: dense embeddings where similar words are close; context-free.",
+            "<b>BERT</b>: contextual embeddings from a transformer; fine-tune for classification."],
+    libs:["scikit-learn","gensim","transformers"],
+    params:[["ngram_range","(1,2) unigrams + bigrams"],["min_df / max_features","Vocabulary pruning"],["vector_size, window, sg","Word2Vec dimensions, context, skip-gram"],["model","Hugging Face model name"]],
+    code:`from sklearn.pipeline import make_pipeline
+from sklearn.feature_extraction.text import TfidfVectorizer
+from sklearn.linear_model import LogisticRegression
+
+reviews = ["love this product, works great", "terrible quality, broke in a day",
+           "excellent value and fast delivery", "waste of money, very disappointed"]
+labels = [1, 0, 1, 0]
+
+clf = make_pipeline(
+    TfidfVectorizer(ngram_range=(1, 2), min_df=1, stop_words="english", max_features=20000),
+    LogisticRegression(max_iter=300))
+clf.fit(reviews, labels)
+print(clf.predict(["great quality, love it", "very disappointed"]))
+
+# Word2Vec embeddings (pip install gensim)
+from gensim.models import Word2Vec
+tokens = [r.lower().split() for r in reviews]
+w2v = Word2Vec(tokens, vector_size=50, window=3, min_count=1, sg=1, epochs=50)
+print(w2v.wv.most_similar("great", topn=2))
+
+# BERT-family model (pip install transformers torch)
+from transformers import pipeline
+sentiment = pipeline("sentiment-analysis")      # default pretrained model downloads on first run
+print(sentiment("The battery life is fantastic"))`,
+    d:{t:"flow",s:["Raw text","Clean + tokenize","TF-IDF / embeddings","Classifier","Sentiment label"]},
+    a:["Product-review sentiment analysis","Customer-support ticket routing","Spam and toxicity detection","Search and recommendation"],
+    alt:["<b>spaCy / NLTK</b>: preprocessing toolkits","<b>Sentence-Transformers</b>: strong sentence embeddings","<b>Fine-tuned DistilBERT</b>: accuracy with less compute","<b>LLM APIs</b>: zero-shot classification without training"] },
+
+  { unit:"D · MLOps, NLP & Time Series", title:"Time-Series Forecasting", wk:"Week 15", sess:"Sessions 57–60",
+    lab:"Forecast retail demand with Prophet; evaluate MAE",
+    theory:["Components: <b>trend</b>, <b>seasonality</b>, noise. Check stationarity before ARIMA.",
+            "<b>ARIMA(p,d,q)</b>: autoregression + differencing + moving average. <b>SARIMA</b> adds seasonal terms (P,D,Q,s).",
+            "<b>Prophet</b>: additive trend + seasonality + holidays; robust and easy for business data.",
+            "<b>LSTM</b>: neural sequence model for complex patterns. Always validate with a <b>time-ordered split</b>, never random."],
+    libs:["prophet","statsmodels","pandas","scikit-learn"],
+    params:[["order=(p,d,q)","ARIMA terms"],["seasonal_order=(P,D,Q,s)","Seasonal ARIMA terms (s=7 for weekly)"],["changepoint_prior_scale","Prophet trend flexibility"],["periods","Days to forecast"]],
+    code:`# pip install prophet statsmodels
+import numpy as np, pandas as pd
+from sklearn.metrics import mean_absolute_error
+from prophet import Prophet
+from statsmodels.tsa.statespace.sarimax import SARIMAX
+
+days = pd.date_range("2023-01-01", periods=730)
+rng = np.random.default_rng(0)
+sales = 100 + 0.05 * np.arange(730) + 15 * np.sin(2 * np.pi * np.arange(730) / 7) + rng.normal(0, 4, 730)
+df = pd.DataFrame({"ds": days, "y": sales})
+train, test = df.iloc[:-30], df.iloc[-30:]            # time-ordered split
+
+m = Prophet(yearly_seasonality=True, weekly_seasonality=True, changepoint_prior_scale=0.05)
+m.fit(train)
+fc = m.predict(m.make_future_dataframe(periods=30))
+print("Prophet MAE:", mean_absolute_error(test["y"], fc["yhat"].iloc[-30:]))
+
+sar = SARIMAX(train["y"], order=(1, 1, 1), seasonal_order=(1, 1, 1, 7)).fit(disp=False)
+print("SARIMA MAE:", mean_absolute_error(test["y"], sar.forecast(30)))`,
+    d:{t:"scatter",m:"curve",cap:"Trend + seasonality, then forecast ahead"},
+    a:["Retail demand and inventory planning","Energy load forecasting","Traffic and web-visit prediction","Financial and sales forecasting"],
+    alt:["<b>statsforecast / sktime</b>: fast classical models","<b>LightGBM with lag features</b>: strong tabular approach","<b>N-BEATS / Temporal Fusion Transformer</b>: deep learning","<b>Pretrained forecasters (Chronos, TimesFM)</b>: zero-shot forecasting"] },
+
+  { unit:"E · Ethics & Capstone", title:"Explainability & Ethics", wk:"Week 16", sess:"Sessions 61–64",
+    lab:"SHAP waterfall and beeswarm plots on a credit model",
+    theory:["<b>SHAP</b>: Shapley-value contribution of each feature, both per-prediction (<b>waterfall</b>) and global (<b>beeswarm</b>).",
+            "<b>LIME</b>: explains one prediction by fitting a local simple model.",
+            "<b>Fairness metrics</b>: demographic parity, equalized odds; compare across groups such as gender or age.",
+            "<b>Bias audit</b>: check data representation, label bias, proxy features, then document the model (model card)."],
+    libs:["shap","fairlearn","xgboost"],
+    params:[["shap.Explainer","Auto-picks a Tree/Linear explainer"],["sensitive_features","Group column for fairness metrics"],["demographic_parity_difference","Gap in selection rate between groups"],["max_display","Features shown in plots"]],
+    code:`# pip install shap fairlearn xgboost
+import numpy as np, pandas as pd, shap
+from xgboost import XGBClassifier
+from fairlearn.metrics import MetricFrame, selection_rate, demographic_parity_difference
+from sklearn.metrics import accuracy_score
+
+rng = np.random.default_rng(0); n = 2000
+X = pd.DataFrame({"income": rng.normal(50, 15, n), "age": rng.integers(21, 65, n),
+                  "debt_ratio": rng.random(n)})
+y = ((X["income"] / 50 - X["debt_ratio"] + rng.normal(0, .2, n)) > 0.3).astype(int)
+group = pd.Series(rng.choice(["A", "B"], n), name="group")   # sensitive attribute
+
+model = XGBClassifier(n_estimators=200, max_depth=3).fit(X, y)
+
+explainer = shap.Explainer(model, X)
+sv = explainer(X[:500])
+shap.plots.waterfall(sv[0])        # one customer's decision
+shap.plots.beeswarm(sv)            # overall feature impact
+
+pred = model.predict(X)
+mf = MetricFrame(metrics={"acc": accuracy_score, "selection": selection_rate},
+                 y_true=y, y_pred=pred, sensitive_features=group)
+print(mf.by_group)
+print("Parity gap:", demographic_parity_difference(y, pred, sensitive_features=group))`,
+    d:{t:"branch",r:"Responsible ML",s:["SHAP|global + local","LIME|local surrogate","Fairness metrics|group parity","Bias audit|before deploy"]},
+    a:["Explaining loan approvals and rejections","Regulatory compliance and audits","Medical decision support transparency","Detecting discrimination in hiring models"],
+    alt:["<b>InterpretML (EBM)</b>: inherently interpretable models","<b>Captum</b>: explanations for deep learning","<b>AIF360</b>: IBM fairness toolkit","<b>Model cards / SageMaker Clarify / Vertex Explainable AI</b>"] },
+
+  { unit:"E · Ethics & Capstone", title:"Capstone Project: End-to-End Pipeline", wk:"Week 17", sess:"Sessions 65–68",
+    lab:"Team ML project; demo to an industry evaluator",
+    theory:["Deliver the full path: <b>problem → data/EDA → features → model → evaluation → deployment (SageMaker or Vertex) → documentation</b>.",
+            "Save the <b>entire pipeline</b> (preprocessing + model) with joblib so training and serving match.",
+            "Document: problem statement, data sources, metrics, limitations, fairness checks, model card, README, architecture diagram.",
+            "Expose the model with an API (FastAPI) or app (Streamlit) and a cloud endpoint."],
+    libs:["scikit-learn","joblib","fastapi"],
+    params:[["joblib.dump","Saves the fitted pipeline"],["FastAPI()","REST API wrapper"],["uvicorn","Server that runs the API"],["model card","Short document of use, metrics, limits"]],
+    code:`import joblib, json
+from sklearn.datasets import load_breast_cancer
+from sklearn.pipeline import Pipeline
+from sklearn.preprocessing import StandardScaler
+from sklearn.ensemble import GradientBoostingClassifier
+from sklearn.model_selection import train_test_split
+from sklearn.metrics import roc_auc_score
+
+X, y = load_breast_cancer(return_X_y=True)
+X_tr, X_te, y_tr, y_te = train_test_split(X, y, stratify=y, random_state=0)
+
+pipe = Pipeline([("scale", StandardScaler()),
+                 ("model", GradientBoostingClassifier(random_state=0))]).fit(X_tr, y_tr)
+auc = roc_auc_score(y_te, pipe.predict_proba(X_te)[:, 1])
+joblib.dump(pipe, "model.joblib")
+json.dump({"model": "GradientBoosting", "auc": round(auc, 3),
+           "limitations": "Trained on one dataset; not for clinical use"},
+          open("model_card.json", "w"), indent=2)
+
+# --- api.py  (run: uvicorn api:app --reload) ---
+# from fastapi import FastAPI
+# import joblib, numpy as np
+# app = FastAPI(); model = joblib.load("model.joblib")
+# @app.post("/predict")
+# def predict(features: list[float]):
+#     return {"probability": float(model.predict_proba(np.array([features]))[0, 1])}`,
+    d:{t:"flow",s:["Problem","Data + EDA","Pipeline + model","Cloud deployment","Docs + demo"]},
+    a:["Portfolio project for jobs and internships","Industry-style delivery with evaluation","Prototype for real business use cases"],
+    alt:["<b>Streamlit / Gradio</b>: quick demo UI","<b>Docker</b>: package the app for any cloud","<b>BentoML</b>: model serving framework","<b>GitHub Actions</b>: CI/CD for the capstone"] },
+
+  { unit:"E · Ethics & Capstone", title:"Capstone Presentations & Certification Prep", wk:"Week 18", sess:"Sessions 69–72",
+    lab:"Panel review; certification registration guidance",
+    theory:["Presentation flow: problem → data → approach → results (with business metric) → deployment demo → limitations and next steps.",
+            "Show baseline vs final model, error analysis and a live or recorded demo.",
+            "Certification options: <b>AWS ML Engineer – Associate (MLA-C01)</b> (MLS-C01 retired 31 March 2026) and <b>Google Professional Machine Learning Engineer</b>.",
+            "Plan: take timed mock exams, review weak domains, then book the exam; confirm current exam codes, fees and dates on the official sites."],
+    libs:["streamlit","joblib"],
+    params:[["st.slider","Input widget for demo features"],["st.metric","Shows the prediction result"],["@st.cache_resource","Loads the model once"],["streamlit run app.py","Starts the demo app"]],
+    code:`# app.py   ->   streamlit run app.py
+import joblib, numpy as np, streamlit as st
+
+@st.cache_resource
+def load():
+    return joblib.load("model.joblib")          # pipeline saved in Week 17
+
+model = load()
+st.title("Capstone Demo: Tumor Classifier")
+st.caption("Educational demo, not for clinical use")
+
+vals = [st.slider(f"Feature {i + 1}", 0.0, 30.0, 10.0) for i in range(5)]
+x = np.array([vals + [10.0] * 25])               # pad remaining features with defaults
+
+if st.button("Predict"):
+    p = model.predict_proba(x)[0, 1]
+    st.metric("Probability of benign", f"{p:.1%}")`,
+    d:{t:"flow",s:["Final demo","Panel review","Mock exams","Certification plan"]},
+    a:["Showcasing work to evaluators and employers","Preparing for AWS / Google certification exams","Building a public portfolio"],
+    alt:["<b>Hugging Face Spaces / Streamlit Cloud</b>: free demo hosting","<b>Loom video demo</b>: recorded walkthrough","<b>Google PMLE / AWS MLA-C01</b>: certification tracks","<b>Kaggle / GitHub portfolio</b>: public proof of work"] }
+  ];
+
+  // keep topics in course order (stable sort by group)
+  T = $.map(T, function (t, i) { t._i = i; return t; })
+        .sort(function (a, b) { return a.unit.localeCompare(b.unit) || a._i - b._i; });
+  var EXTRA = {};
+  $.each(T, function (_, t) { EXTRA[t.title] = { d: t.d, a: t.a, alt: t.alt }; });
+
+  /* ---------- DIAGRAMS & APPLICATIONS (keyed by topic title) ---------- */
+  var BLUE = "#2457c5", ORG = "#e07a1f", GRN = "#2a9d5c", GRY = "#8a97a6";
+  function rnd(seed) { return function () { seed = (seed * 9301 + 49297) % 233280; return seed / 233280; }; }
+  function box(s) { var p = String(s).split("|"); return '<div class="dbox"><b>' + p[0] + '</b>' + (p[1] ? '<small>' + p[1] + '</small>' : '') + '</div>'; }
+  function svg(inner, cap, h) {
+    return '<svg viewBox="0 0 340 ' + (h || 220) + '" class="dsvg" role="img" aria-label="' + (cap || "diagram") + '">' +
+      '<defs><marker id="ah" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#51606f"/></marker></defs>' + inner + '</svg>';
+  }
+  function dots(arr, col) { return $.map(arr, function (p) { return '<circle cx="' + p[0].toFixed(1) + '" cy="' + p[1].toFixed(1) + '" r="4" fill="' + col + '" opacity=".85"/>'; }).join(""); }
+  function cloud(r, cx, cy, sp, n) { var a = []; for (var i = 0; i < n; i++) a.push([cx + (r() - .5) * 2 * sp, cy + (r() - .5) * 2 * sp]); return a; }
+  var AX = '<path d="M25 200 H325 M25 200 V15" stroke="#9aa5b1" fill="none"/>';
+  function ln(x1, y1, x2, y2, c, w, dash, arrow) { return '<line x1="' + x1 + '" y1="' + y1 + '" x2="' + x2 + '" y2="' + y2 + '" stroke="' + c + '" stroke-width="' + (w || 2) + '"' + (dash ? ' stroke-dasharray="5 4"' : '') + (arrow ? ' marker-end="url(#ah)"' : '') + '/>'; }
+  function txt(x, y, s, c, sz, anchor) { return '<text x="' + x + '" y="' + y + '" font-size="' + (sz || 11) + '" fill="' + (c || "#1c2733") + '" text-anchor="' + (anchor || "middle") + '">' + s + '</text>'; }
+
+  var D = {
+    flow: function (d) { return '<div class="dflow">' + $.map(d.s, function (x) { return box(x); }).join('<span class="darr">&#10140;</span>') + '</div>'; },
+    branch: function (d) { return '<div class="dbranch">' + box(d.r) + '<div class="darr down">&#9660;</div><div class="dkids">' + $.map(d.s, function (x) { return box(x); }).join("") + '</div></div>'; },
+    net: function (d) {
+      var L = d.s, W = 340, H = 210, xs = [], lines = "", circ = "";
+      $.each(L, function (i, n) { var x = 40 + i * (W - 80) / (L.length - 1), col = []; for (var j = 0; j < n; j++) col.push([x, 25 + (j + .5) * (H - 50) / n]); xs.push(col); });
+      for (var i = 0; i < xs.length - 1; i++) $.each(xs[i], function (_, a) { $.each(xs[i + 1], function (_, b) { lines += '<line x1="' + a[0] + '" y1="' + a[1] + '" x2="' + b[0] + '" y2="' + b[1] + '" stroke="#b9c4d3"/>'; }); });
+      $.each(xs, function (i, col) { var c = i === 0 ? BLUE : i === xs.length - 1 ? ORG : GRN; $.each(col, function (_, p) { circ += '<circle cx="' + p[0] + '" cy="' + p[1] + '" r="9" fill="' + c + '"/>'; }); });
+      var lab = txt(xs[0][0][0], 205, "Input", GRY) + txt(xs[xs.length - 1][0][0], 205, "Output", GRY) + txt(W / 2, 205, "Hidden", GRY);
+      return svg(lines + circ + lab, "Neural network layers", 215);
+    },
+    tree: function (d) {
+      var P = [[170, 28], [90, 88], [250, 88], [50, 152], [130, 152], [210, 152], [290, 152]], E = [[0, 1], [0, 2], [1, 3], [1, 4], [2, 5], [2, 6]], o = "";
+      $.each(E, function (_, e) { if (d.s[e[0]] && d.s[e[1]]) o += ln(P[e[0]][0], P[e[0]][1] + 12, P[e[1]][0], P[e[1]][1] - 12, GRY, 1.5); });
+      $.each(P, function (i, p) { if (!d.s[i]) return; var leaf = i > 2 || (!d.s[2 * i + 1] && !d.s[2 * i + 2]);
+        o += '<rect x="' + (p[0] - 40) + '" y="' + (p[1] - 13) + '" width="80" height="26" rx="6" fill="' + (leaf ? "#fdeedd" : "#e8eef9") + '" stroke="' + (leaf ? ORG : BLUE) + '"/>' + txt(p[0], p[1] + 4, d.s[i], null, 9.5); });
+      o += txt(110, 62, "yes", GRY, 9) + txt(230, 62, "no", GRY, 9);
+      return svg(o, "Decision tree", 180);
+    },
+    graph: function (d) {
+      var o = "";
+      $.each(d.e, function (_, e) { var a = d.n[e[0]], b = d.n[e[1]], dx = b[1] - a[1], dy = b[2] - a[2], t = Math.min(dx ? 36 / Math.abs(dx) : 9, dy ? 15 / Math.abs(dy) : 9);
+        o += ln(a[1] + dx * t, a[2] + dy * t, b[1] - dx * t, b[2] - dy * t, "#51606f", 1.5, false, true); });
+      $.each(d.n, function (_, n) { var c = n[3] === "o" ? ORG : BLUE;
+        o += '<rect x="' + (n[1] - 34) + '" y="' + (n[2] - 13) + '" width="68" height="26" rx="13" fill="' + (n[3] === "o" ? "#fdeedd" : "#e8eef9") + '" stroke="' + c + '"/>' + txt(n[1], n[2] + 4, n[0], null, 10.5); });
+      return svg(o, "Graphical model", d.h || 140);
+    },
+    scatter: function (d) {
+      var r = rnd(7), o = AX, m = d.m, i, a, b, p;
+      if (m === "line" || m === "margin") {
+        a = cloud(r, 85, 155, 28, 16); b = cloud(r, 255, 65, 28, 16);
+        o += dots(a, BLUE) + dots(b, ORG) + ln(130, 30, 210, 190, "#1c2733", 2.5);
+        if (m === "margin") o += ln(112, 21, 192, 181, GRY, 1.5, true) + ln(148, 39, 228, 199, GRY, 1.5, true) + txt(250, 190, "margin", GRY, 10);
+        else o += txt(240, 190, "decision boundary", GRY, 10);
+      } else if (m === "reg" || m === "resid") {
+        a = []; for (i = 0; i < 18; i++) { var x = 40 + i * 15.5, y = 175 - .55 * (x - 40) + (r() - .5) * 40; a.push([x, y]); if (m === "resid") o += ln(x, y, x, 175 - .55 * (x - 40), "#c0392b", 1, true); }
+        o += ln(35, 178, 315, 24, "#1c2733", 2.5) + dots(a, BLUE) + txt(250, 190, m === "resid" ? "residuals" : "best-fit line", GRY, 10);
+      } else if (m === "curve") {
+        a = []; p = "M30,110"; for (i = 0; i <= 28; i++) { var xx = 30 + i * 10, yy = 110 - 60 * Math.sin(i / 28 * 2 * Math.PI); p += " L" + xx + "," + yy; if (i % 3 === 0) a.push([xx, yy + (r() - .5) * 24]); }
+        o += '<path d="' + p + '" fill="none" stroke="' + ORG + '" stroke-width="2.5"/>' + dots(a, BLUE) + txt(250, 25, "smooth fit", GRY, 10);
+      } else if (m === "clusters" || m === "gmm") {
+        var C = [[80, 150, BLUE], [250, 150, ORG], [170, 55, GRN]];
+        $.each(C, function (_, c) { o += dots(cloud(r, c[0], c[1], 22, 14), c[2]);
+          o += m === "gmm" ? '<ellipse cx="' + c[0] + '" cy="' + c[1] + '" rx="42" ry="30" fill="none" stroke="' + c[2] + '" stroke-dasharray="4 3" stroke-width="1.5"/>'
+                           : txt(c[0], c[1] + 5, "&#10005;", "#1c2733", 18); });
+      } else if (m === "knn") {
+        o += dots(cloud(r, 115, 140, 34, 18), BLUE) + dots(cloud(r, 225, 80, 34, 18), ORG) +
+             '<circle cx="170" cy="110" r="48" fill="none" stroke="' + GRN + '" stroke-dasharray="5 4" stroke-width="2"/>' + txt(170, 115, "&#9733;", GRN, 20) + txt(250, 190, "k nearest neighbours", GRY, 10);
+      } else if (m === "proj" || m === "lda") {
+        for (i = 0; i < 26; i++) { var t = (r() - .5) * 2, n = (r() - .5) * 26, cls = m === "lda" && i % 2, off = cls ? 28 : -10;
+          o += dots([[170 + t * 100 - (n + off) * .4, 110 - t * 42 + (n + off) * .9]], m === "lda" ? (cls ? ORG : BLUE) : BLUE); }
+        o += m === "lda" ? ln(120, 170, 220, 50, "#1c2733", 2.5, false, true) + txt(236, 48, "LD1", null, 11)
+                         : ln(170, 110, 290, 60, "#1c2733", 2.5, false, true) + ln(170, 110, 195, 165, "#c0392b", 2, false, true) + txt(300, 58, "PC1", null, 11) + txt(205, 178, "PC2", "#c0392b", 11);
+      } else if (m === "bell") {
+        p = "M30,200"; for (i = 0; i <= 56; i++) { var gx = 30 + i * 5, gy = 200 - 165 * Math.exp(-.5 * Math.pow((gx - 170) / 50, 2)); p += " L" + gx + "," + gy; }
+        o += '<path d="' + p + ' L310,200 Z" fill="#e8eef9" stroke="' + BLUE + '" stroke-width="2"/>' + ln(120, 200, 120, 80, GRY, 1.5, true) + ln(220, 200, 220, 80, GRY, 1.5, true) + ln(170, 200, 170, 35, "#1c2733", 1.5, true) +
+             txt(170, 215, "&mu;", null, 12) + txt(170, 130, "68% within &plusmn;1&sigma;", BLUE, 10);
+      }
+      return svg(o, "Chart", 225);
+    }
+  };
+
+  /* ---------- RENDER ---------- */
+  var current = 0;
+
+  function buildMenu(filter) {
+    var html = "", lastUnit = "";
+    $.each(T, function (i, t) {
+      if (filter && (t.title + ' ' + t.wk).toLowerCase().indexOf(filter) === -1) return;
+      if (t.unit !== lastUnit) { html += '<div class="unit">' + t.unit + '</div>'; lastUnit = t.unit; }
+      html += '<button class="topic' + (i === current ? ' active' : '') + '" data-i="' + i + '">' + t.wk.replace("Week ", "W") + ' · ' + t.title + '</button>';
+    });
+    $("#menu").html(html || '<p class="small text-muted mt-3">No topic found.</p>');
+  }
+
+  function show(i) {
+    current = i;
+    var t = T[i];
+    var theory = $.map(t.theory, function (p) { return "<li>" + p + "</li>"; }).join("");
+    var libs = $.map(t.libs, function (l) { return "<span>" + l + "</span>"; }).join("");
+    var params = $.map(t.params, function (p) {
+      return "<tr><td>" + $("<i>").text(p[0]).html() + "</td><td>" + p[1] + "</td></tr>";
+    }).join("");
+
+    var ex = EXTRA[t.title] || {}, diagram = "", apps = "";
+    if (ex.d && D[ex.d.t]) diagram = '<div class="panel mb-3"><h3 class="h5">Diagram</h3>' + D[ex.d.t](ex.d) +
+      (ex.d.cap ? '<p class="dcap">' + ex.d.cap + '</p>' : '') + '</div>';
+    var alt = ex.alt ? '<div class="panel mt-3"><h3 class="h5">Other good options</h3><ul class="apps mb-0">' +
+      $.map(ex.alt, function (x) { return "<li>" + x + "</li>"; }).join("") + '</ul></div>' : "";
+    if (ex.a) apps = '<div class="panel mt-3"><h3 class="h5">Real-world applications</h3><ul class="apps mb-0">' +
+      $.map(ex.a, function (x) { return "<li>" + x + "</li>"; }).join("") + '</ul></div>';
+
+    $("#content").html(
+      '<div class="panel mb-3"><div class="meta"><span>' + t.wk + '</span><span>' + t.sess + '</span></div><h2 class="h4">' + t.title + '</h2>' +
+        '<ul class="mb-2">' + theory + '</ul><p class="lab mb-0"><b>Lab project:</b> ' + t.lab + '</p></div>' + diagram +
+      '<div class="panel">' +
+        '<h3 class="h5">Python code</h3>' +
+        '<div class="libs mb-2"><small class="text-muted me-2">Libraries:</small>' + libs + '</div>' +
+        '<div class="codebar d-flex justify-content-between"><span>python</span>' +
+          '<button id="copy" class="btn btn-sm btn-outline-light py-0">Copy</button></div>' +
+        '<pre><code class="language-python"></code></pre>' +
+        '<h3 class="h6 mt-3">Important parameters</h3>' +
+        '<table class="table table-sm params mb-0"><tbody>' + params + '</tbody></table>' +
+      '</div>' + apps + alt
+    );
+    $("#content pre code").text(t.code);
+    hljs.highlightElement($("#content pre code")[0]);
+    buildMenu($("#search").val().toLowerCase());
+    $("#prev").prop("disabled", i === 0);
+    $("#next").prop("disabled", i === T.length - 1);
+    location.hash = "t" + i;
+    window.scrollTo({ top: 0 });
+  }
+
+  $("#menu").on("click", ".topic", function () { show($(this).data("i")); });
+  $("#search").on("input", function () { buildMenu($(this).val().toLowerCase()); });
+  $("#prev").on("click", function () { if (current > 0) show(current - 1); });
+  $("#next").on("click", function () { if (current < T.length - 1) show(current + 1); });
+  $("#content").on("click", "#copy", function () {
+    var btn = $(this), text = T[current].code;
+    var done = function () { btn.text("Copied"); setTimeout(function () { btn.text("Copy"); }, 1200); };
+    if (navigator.clipboard) { navigator.clipboard.writeText(text).then(done); }
+    else { var ta = $("<textarea>").val(text).appendTo("body").select(); document.execCommand("copy"); ta.remove(); done(); }
+  });
+
+  var start = parseInt((location.hash || "").replace("#t", ""), 10);
+  show(isNaN(start) || !T[start] ? 0 : start);
+});
+</script>
+</body>
+</html>
